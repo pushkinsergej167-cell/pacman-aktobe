@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>PACMAN Game Center • Актобе | NFC-визитка</title>
+  <meta name="theme-color" content="#090A0F" />
+  <!-- Подключение шрифтов с надёжным системным фолбэком -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==========================================================================
+       ДИЗАЙН-ТОКЕНЫ И БАЗОВЫЕ СТИЛИ (DARK ESPORTS THEME)
+       ========================================================================== */
+    :root {
+      --bg-outer: #050609;
+      --bg-main: #090A0F;
+      --bg-card: #12141D;
+      --bg-card-hover: #171A26;
+      --bg-elevated: #1B1E2B;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(245, 184, 0, 0.38);
+      --gold-primary: #F5B800;
+      --gold-bright: #FFD000;
+      --gold-glow: rgba(245, 184, 0, 0.28);
+      --gold-soft: rgba(245, 184, 0, 0.12);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --green-online: #22C55E;
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--bg-outer);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    /* Фоновая сетка и неоновое свечение для десктопа */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.14) 0%, transparent 52%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 28px 28px, 28px 28px;
+      padding: 0;
+    }
+
+    @media (min-width: 480px) {
+      body {
+        padding: 24px 16px 40px;
+      }
+    }
+
+    /* Основной контейнер мобильной NFC-визитки */
+    .app-shell {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      background: var(--bg-main);
+      position: relative;
+      overflow: hidden;
+      padding: 20px 16px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    @media (min-width: 480px) {
+      .app-shell {
+        min-height: auto;
+        border-radius: 32px;
+        border: 1px solid var(--border-subtle);
+        box-shadow:
+          0 25px 70px -15px rgba(0, 0, 0, 0.85),
+          0 0 40px -10px rgba(245, 184, 0, 0.14);
+        padding: 24px 18px 32px;
+      }
+    }
+
+    /* Декоративное верхнее свечение */
+    .top-glow {
+      position: absolute;
+      top: -90px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(245, 184, 0, 0.26) 0%, rgba(245, 184, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ==========================================================================
+       1. ШАПКА ПРОФИЛЯ И ФИРМЕННЫЙ ЛОГОТИП PACMAN
+       ========================================================================== */
+    .header-card {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    .nfc-chip-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 16px;
+    }
+
+    .nfc-chip-hint svg {
+      color: var(--gold-primary);
+    }
+
+    /* Круглый бейдж-аватар в стиле Instagram @pacman.kz */
+    .logo-ring {
+      width: 108px;
+      height: 108px;
+      border-radius: 50%;
+      padding: 3px;
+      background: conic-gradient(from 140deg, #F5B800, #FFD000, #8A5A00, #F5B800);
+      box-shadow: 0 0 28px var(--gold-glow);
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .logo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #07080B;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border: 2px solid #090A0F;
+    }
+
+    /* Фирменный логотип PACMAN GAME CENTER */
+    .brand-logo-word {
+      font-family: 'Orbitron', 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      color: var(--gold-bright);
+      text-shadow: 0 0 12px rgba(255, 208, 0, 0.45);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .brand-logo-subpill {
+      background: linear-gradient(90deg, var(--gold-primary), var(--gold-bright));
+      color: #090A0F;
+      font-weight: 800;
+      font-size: 7.5px;
+      letter-spacing: 0.14em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .club-title {
+      font-family: 'Orbitron', 'Inter', sans-serif;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .club-subtitle {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold-soft);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-bright);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green-online);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    /* ==========================================================================
+       2. ГЛАВНЫЕ CTA-КНОПКИ (БРОНЬ, 2ГИС, INSTAGRAM, ЗВОНОК)
+       ========================================================================== */
+    .cta-stack {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-decoration: none;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .btn-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .btn-text-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .btn-main-label {
+      line-height: 1.2;
+    }
+
+    .btn-sub-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      opacity: 0.78;
+      margin-top: 2px;
+    }
+
+    /* Главная золотая кнопка бронирования */
+    .btn-primary-gold {
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-primary) 100%);
+      color: #090A0F;
+      box-shadow: 0 10px 26px -6px rgba(245, 184, 0, 0.55);
+      padding: 15px 16px;
+    }
+
+    .btn-primary-gold:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 12px 30px -4px rgba(255, 208, 0, 0.65);
+    }
+
+    .btn-primary-gold .btn-icon-box {
+      background: rgba(9, 10, 15, 0.14);
+      color: #090A0F;
+    }
+
+    .btn-primary-gold .btn-sub-label {
+      color: #1E2028;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+
+    /* Второстепенные карточки-кнопки */
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-gold);
+    }
+
+    .btn-secondary .btn-icon-box {
+      background: var(--gold-soft);
+      color: var(--gold-primary);
+      border: 1px solid rgba(245, 184, 0, 0.22);
+    }
+
+    .btn-secondary .btn-sub-label {
+      color: var(--text-secondary);
+    }
+
+    .cta-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-compact {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 14px;
+    }
+
+    .btn-compact-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ==========================================================================
+       3. ИНТЕРАКТИВНЫЕ ВКЛАДКИ (ФИЛИАЛЫ, ЦЕНЫ, ЖЕЛЕЗО, ТУРНИРЫ)
+       ========================================================================== */
+    .tabs-section {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tabs-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: var(--bg-card);
+      padding: 5px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 9px 4px;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .tab-btn svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.75;
+    }
+
+    .tab-btn.active {
+      background: var(--gold-primary);
+      color: #090A0F;
+      box-shadow: 0 4px 14px rgba(245, 184, 0, 0.32);
+    }
+
+    .tab-btn.active svg {
+      opacity: 1;
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeSlide 0.25s ease-out;
+    }
+
+    .tab-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Карточка филиала */
+    .branch-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: var(--transition);
+    }
+
+    .branch-card:hover {
+      border-color: var(--border-gold);
+    }
+
+    .branch-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .branch-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .branch-tag {
+      font-family: 'Orbitron', 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      color: #090A0F;
+      background: var(--gold-primary);
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .branch-address {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .branch-hours {
+      font-size: 11px;
+      color: var(--green-online);
+      font-weight: 600;
+      background: rgba(34, 197, 94, 0.1);
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .branch-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mini-btn {
+      padding: 9px 10px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: var(--transition);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .mini-btn:active {
+      transform: scale(0.97);
+    }
+
+    .mini-btn-map {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+    }
+
+    .mini-btn-map:hover {
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .mini-btn-book {
+      background: var(--gold-soft);
+      color: var(--gold-bright);
+      border-color: var(--border-gold);
+    }
+
+    .mini-btn-book:hover {
+      background: var(--gold-primary);
+      color: #090A0F;
+    }
+
+    /* Тарифы (Цены) */
+    .price-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .price-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      position: relative;
+    }
+
+    .price-card.featured {
+      border-color: var(--border-gold);
+      background: linear-gradient(180deg, rgba(245, 184, 0, 0.09) 0%, var(--bg-card) 100%);
+    }
+
+    .price-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: var(--gold-primary);
+      color: #090A0F;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    .price-zone {
+      font-family: 'Orbitron', 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--gold-bright);
+    }
+
+    .price-desc {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .price-value {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-top: 2px;
+    }
+
+    .price-value span {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .info-note {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      text-align: center;
+    }
+
+    /* Железо (Характеристики ПК) */
+    .spec-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spec-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--gold-soft);
+      border: 1px solid rgba(245, 184, 0, 0.25);
+      color: var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .spec-title {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .spec-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 2px;
+    }
+
+    /* Турниры и акции */
+    .promo-card {
+      background: linear-gradient(135deg, #161924 0%, #10121A 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .promo-tag {
+      display: inline-block;
+      width: fit-content;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #090A0F;
+      background: var(--gold-bright);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+    }
+
+    .promo-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .promo-text {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* ==========================================================================
+       4. УДОБСТВА И ПРАВИЛА (ЧИПСЫ) + ПОДЕЛИТЬСЯ
+       ========================================================================== */
+    .amenities-box {
+      position: relative;
+      z-index: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-mini-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-secondary);
+    }
+
+    .chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+    }
+
+    .chip svg {
+      color: var(--gold-primary);
+      width: 14px;
+      height: 14px;
+    }
+
+    .share-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: var(--radius-lg);
+      padding: 13px 16px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+      position: relative;
+      z-index: 1;
+    }
+
+    .share-btn:hover {
+      border-color: var(--border-gold);
+      background: var(--gold-soft);
+      color: var(--gold-bright);
+    }
+
+    .share-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* ==========================================================================
+       5. ФУТЕР
+       ========================================================================== */
+    .footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .footer-brand {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       МОДАЛЬНЫЕ ОКНА (БРОНИРОВАНИЕ ПК И ВЫБОР ФИЛИАЛА ДЛЯ 2ГИС)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 5, 8, 0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      padding: 12px;
+    }
+
+    @media (min-width: 480px) {
+      .modal-backdrop {
+        align-items: center;
+      }
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 420px;
+      background: #11131C;
+      border: 1px solid var(--border-gold);
+      border-radius: 24px;
+      padding: 20px 18px 22px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--gold-bright);
+    }
+
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: var(--transition);
+    }
+
+    .close-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 13px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.15);
+    }
+
+    .zone-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .zone-pill {
+      background: var(--bg-main);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: 11px;
+      padding: 10px 6px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .zone-pill.active {
+      background: var(--gold-soft);
+      border-color: var(--gold-primary);
+      color: var(--gold-bright);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #181B26;
+      border: 1px solid var(--gold-primary);
+      color: var(--text-primary);
+      padding: 11px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75);
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <main class="app-shell">
+    <div class="top-glow"></div>
+
+    <!-- ======================================================================
+         1. ШАПКА ПРОФИЛЯ PACMAN GAME CENTER
+         ====================================================================== -->
+    <header class="header-card">
+      <div class="nfc-chip-hint">
+        <!-- Иконка NFC-волн -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8.32a7.43 7.43 0 0 1 0 7.36" />
+          <path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58" />
+          <path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8" />
+          <path d="M16.37 2a20.16 20.16 0 0 1 0 20" />
+        </svg>
+        <span>NFC Smart Card • Актобе</span>
+      </div>
+
+      <!-- Фирменный черно-желтый бейдж-логотип -->
+      <div class="logo-ring" aria-label="PACMAN Game Center">
+        <div class="logo-inner">
+          <div class="brand-logo-word">PACMAN</div>
+          <div class="brand-logo-subpill">GAME CENTER</div>
+        </div>
+      </div>
+
+      <h1 class="club-title">PACMAN GAME CENTER</h1>
+      <p class="club-subtitle">Сеть компьютерных клубов • г. Актобе</p>
+
+      <div class="status-badge">
+        <span class="pulse-dot"></span>
+        <span>Открыто 24/7 • Бронь и отзывы в 1 касание</span>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         2. ГЛАВНЫЕ БЫСТРЫЕ ДЕЙСТВИЯ (CTA)
+         ====================================================================== -->
+    <section class="cta-stack" aria-label="Быстрые действия">
+      <!-- Главная золотая кнопка: Забронировать ПК -->
+      <button type="button" class="btn btn-primary-gold" onclick="openBookingModal()">
+        <span class="btn-left">
+          <span class="btn-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </span>
+          <span class="btn-text-group">
+            <span class="btn-main-label">Забронировать ПК</span>
+            <span class="btn-sub-label">Выбрать филиал, зону и время за 30 сек</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+
+      <!-- Кнопка: Оставить отзыв в 2ГИС -->
+      <button type="button" class="btn btn-secondary" onclick="open2GisModal()">
+        <span class="btn-left">
+          <span class="btn-icon-box">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </span>
+          <span class="btn-text-group">
+            <span class="btn-main-label">Оставить отзыв в 2ГИС</span>
+            <span class="btn-sub-label">Выбрать ваш клуб в Актобе</span>
+          </span>
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+
+      <!-- Сетка из 2 кнопок: Instagram и Позвонить -->
+      <div class="cta-grid-2">
+        <a href="https://instagram.com/pacman.kz" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-compact">
+          <div class="btn-compact-top">
+            <span class="btn-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </div>
+          <div class="btn-text-group">
+            <span class="btn-main-label">Instagram</span>
+            <span class="btn-sub-label">@pacman.kz</span>
+          </div>
+        </a>
+
+        <a href="tel:+77000000000" class="btn btn-secondary btn-compact">
+          <div class="btn-compact-top">
+            <span class="btn-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+          <div class="btn-text-group">
+            <span class="btn-main-label">Позвонить</span>
+            <span class="btn-sub-label">Администратор</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. ИНТЕРАКТИВНЫЕ ВКЛАДКИ (КАК ХАЙЛАЙТЫ КЛУБА)
+         ====================================================================== -->
+    <section class="tabs-section" aria-label="Информация о клубах">
+      <div class="tabs-bar" role="tablist">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="branches">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span>Филиалы (6)</span>
+        </button>
+
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="prices">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          <span>Цены</span>
+        </button>
+
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="hardware">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
+            <rect x="9" y="9" width="6" height="6" />
+            <line x1="9" y1="1" x2="9" y2="4" />
+            <line x1="15" y1="1" x2="15" y2="4" />
+            <line x1="9" y1="20" x2="9" y2="23" />
+            <line x1="15" y1="20" x2="15" y2="23" />
+            <line x1="20" y1="9" x2="23" y2="9" />
+            <line x1="20" y1="14" x2="23" y2="14" />
+            <line x1="1" y1="9" x2="4" y2="9" />
+            <line x1="1" y1="14" x2="4" y2="14" />
+          </svg>
+          <span>Железо</span>
+        </button>
+
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="promos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+            <path d="M4 22h16" />
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+          </svg>
+          <span>Турниры</span>
+        </button>
+      </div>
+
+      <!-- ВКЛАДКА 1: ФИЛИАЛЫ (6) -->
+      <div id="panel-branches" class="tab-panel active" role="tabpanel">
+        <!-- Карточки генерируются из единого массива филиалов в JS для чистоты и синхронизации с модалками -->
+      </div>
+
+      <!-- ВКЛАДКА 2: ЦЕНЫ -->
+      <div id="panel-prices" class="tab-panel" role="tabpanel">
+        <div class="price-grid">
+          <div class="price-card">
+            <div>
+              <div class="price-zone">STANDARD</div>
+              <p class="price-desc">Общий зал, 240Hz мониторы, RTX 4060</p>
+            </div>
+            <div class="price-value">от 700 ₸ <span>/ час</span></div>
+          </div>
+
+          <div class="price-card featured">
+            <span class="price-badge">ХИТ</span>
+            <div>
+              <div class="price-zone">VIP ZONE</div>
+              <p class="price-desc">Увеличенные столы, 360Hz, RTX 4070 Ti</p>
+            </div>
+            <div class="price-value">от 1 100 ₸ <span>/ час</span></div>
+          </div>
+
+          <div class="price-card">
+            <div>
+              <div class="price-zone">BOOTCAMP</div>
+              <p class="price-desc">Закрытая комната на 5 ПК для команды</p>
+            </div>
+            <div class="price-value">от 1 300 ₸ <span>/ час</span></div>
+          </div>
+
+          <div class="price-card featured">
+            <span class="price-badge">ВЫГОДА</span>
+            <div>
+              <div class="price-zone">НОЧЬ 23:00–08:00</div>
+              <p class="price-desc">Выгодный пакет на всю ночь (18+)</p>
+            </div>
+            <div class="price-value">от 2 500 ₸ <span>/ пакет</span></div>
+          </div>
+        </div>
+        <div class="info-note">
+          Актуальные тарифы по конкретному филиалу и пакеты часов уточняйте при бронировании
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 3: ЖЕЛЕЗО -->
+      <div id="panel-hardware" class="tab-panel" role="tabpanel">
+        <div class="spec-card">
+          <div class="spec-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="2" y="6" width="20" height="12" rx="2" />
+              <circle cx="8" cy="12" r="2.5" />
+              <circle cx="16" cy="12" r="2.5" />
+            </svg>
+          </div>
+          <div>
+            <div class="spec-title">Видеокарты и мощь</div>
+            <div class="spec-value">NVIDIA GeForce RTX 4060 / RTX 4070 Ti</div>
+          </div>
+        </div>
+
+        <div class="spec-card">
+          <div class="spec-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </div>
+          <div>
+            <div class="spec-title">Киберспортивные мониторы</div>
+            <div class="spec-value">240Hz — 360Hz Fast IPS (0.5 ms)</div>
+          </div>
+        </div>
+
+        <div class="spec-card">
+          <div class="spec-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            </svg>
+          </div>
+          <div>
+            <div class="spec-title">Профессиональная периферия</div>
+            <div class="spec-value">Logitech G Pro X Superlight / HyperX</div>
+          </div>
+        </div>
+
+        <div class="spec-card">
+          <div class="spec-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+              <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+              <line x1="12" y1="20" x2="12.01" y2="20" />
+            </svg>
+          </div>
+          <div>
+            <div class="spec-title">Канал связи и пинг</div>
+            <div class="spec-value">Выделенный интернет до 1 Гбит/с • Низкий ping</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 4: ТУРНИРЫ И АКЦИИ -->
+      <div id="panel-promos" class="tab-panel" role="tabpanel">
+        <div class="promo-card">
+          <span class="promo-tag">Киберспорт Актобе</span>
+          <div class="promo-title">Регулярные турниры по CS2 (5x5 / 2x2)</div>
+          <p class="promo-text">Проводим любительские и командные турниры среди игроков Актобе с призовым фондом и бонусами на баланс. Анонсы и регистрация — в @pacman.kz.</p>
+        </div>
+
+        <div class="promo-card">
+          <span class="promo-tag">Бонус к балансу</span>
+          <div class="promo-title">+20% при пополнении аккаунта</div>
+          <p class="promo-text">Пополняй игровой баланс на кассе любого из 6 клубов PACMAN и получай дополнительные бонусные минуты на игру.</p>
+        </div>
+
+        <div class="promo-card">
+          <span class="promo-tag">Ночной марафон</span>
+          <div class="promo-title">Выгодные ночные пакеты (23:00 – 08:00)</div>
+          <p class="promo-text">Играй всю ночь по фиксированной цене в залах Standard, VIP или Bootcamp. Вход в ночное время строго 18+ при наличии удостоверения.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. УДОБСТВА И ПРАВИЛА + ПОДЕЛИТЬСЯ
+         ====================================================================== -->
+    <section class="amenities-box" aria-label="Удобства и правила клуба">
+      <div class="section-mini-title">Удобства и правила</div>
+      <div class="chips-wrap">
+        <span class="chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+          Бар и снеки
+        </span>
+        <span class="chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          VIP-комнаты
+        </span>
+        <span class="chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          Кондиционирование
+        </span>
+        <span class="chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0Z"/></svg>
+          Лаунж-зона
+        </span>
+        <span class="chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          18+ ночью
+        </span>
+      </div>
+    </section>
+
+    <button type="button" class="share-btn" onclick="shareBusinessCard()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </svg>
+      <span>Поделиться визиткой</span>
+    </button>
+
+    <!-- ======================================================================
+         5. ФУТЕР
+         ====================================================================== -->
+    <footer class="footer">
+      <div class="footer-brand">PACMAN Game Center • Актобе</div>
+      <div class="footer-note">Быстрый доступ к брони и отзывам через NFC</div>
+    </footer>
+  </main>
+
+  <!-- ========================================================================
+       МОДАЛЬНОЕ ОКНО №1: БРОНИРОВАНИЕ ПК
+       ======================================================================== -->
+  <div id="bookingModal" class="modal-backdrop" onclick="handleBackdropClick(event, 'bookingModal')">
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
+      <div class="modal-header">
+        <h2 id="bookingModalTitle" class="modal-title">БРОНЬ ПК В PACMAN</h2>
+        <button type="button" class="close-btn" onclick="closeModal('bookingModal')" aria-label="Закрыть">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="branchSelect">1. Выберите филиал в Актобе</label>
+        <select id="branchSelect" class="form-control"></select>
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">2. Игровая зона</span>
+        <div class="zone-pills" id="zonePills">
+          <button type="button" class="zone-pill active" data-zone="Standard">Standard</button>
+          <button type="button" class="zone-pill" data-zone="VIP">VIP</button>
+          <button type="button" class="zone-pill" data-zone="Bootcamp">Bootcamp</button>
+        </div>
+      </div>
+
+      <div class="cta-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="pcCount">Кол-во ПК</label>
+          <select id="pcCount" class="form-control">
+            <option value="1 ПК">1 ПК</option>
+            <option value="2 ПК">2 ПК</option>
+            <option value="3 ПК">3 ПК</option>
+            <option value="5 ПК (Команда)">5 ПК (Команда)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="visitTime">Время визита</label>
+          <input type="text" id="visitTime" class="form-control" placeholder="Сегодня, 21:00" value="Сегодня, через 30 мин" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="guestName">Ваше имя или никнейм</label>
+        <input type="text" id="guestName" class="form-control" placeholder="Например: Арман" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary-gold" onclick="sendWhatsAppBooking()">
+          <span class="btn-left">
+            <span class="btn-icon-box">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+            </span>
+            <span class="btn-text-group">
+              <span class="btn-main-label">Отправить бронь в WhatsApp</span>
+              <span class="btn-sub-label">Готовое сообщение администратору</span>
+            </span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+
+        <a href="tel:+77000000000" class="mini-btn mini-btn-map" style="padding: 12px; width: 100%;">
+          Позвонить администратору напрямую
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       МОДАЛЬНОЕ ОКНО №2: ВЫБОР ФИЛИАЛА ДЛЯ ОТЗЫВА В 2ГИС
+       ======================================================================== -->
+  <div id="twoGisModal" class="modal-backdrop" onclick="handleBackdropClick(event, 'twoGisModal')">
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="twoGisModalTitle">
+      <div class="modal-header">
+        <h2 id="twoGisModalTitle" class="modal-title">ОТЗЫВ В 2ГИС</h2>
+        <button type="button" class="close-btn" onclick="closeModal('twoGisModal')" aria-label="Закрыть">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary);">
+        Выберите филиал PACMAN Game Center в Актобе, в котором вы играли — откроется карточка клуба в 2ГИС:
+      </p>
+      <div id="twoGisBranchesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+  </div>
+
+  <!-- Всплывающее уведомление (Toast) -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ========================================================================
+       ДАННЫЕ ВСЕХ 6 ФИЛИАЛОВ PACMAN GAME CENTER В АКТОБЕ
+       ======================================================================== */
+    const BRANCHES = [
+      {
+        id: 'premium',
+        name: 'PREMIUM',
+        address: 'пр. Абилкайыр-хана, 44',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      },
+      {
+        id: 'batys',
+        name: 'BATYS',
+        address: 'пр. Тауелсиздик, 9 к1',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      },
+      {
+        id: 'pro',
+        name: 'PRO',
+        address: '12-й микрорайон, 38а',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      },
+      {
+        id: 'gold',
+        name: 'GOLD',
+        address: 'ул. Алтынсарина, 60',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      },
+      {
+        id: 'prime',
+        name: 'PRIME',
+        address: 'ул. Марат Оспанова, 77',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      },
+      {
+        id: 'city',
+        name: 'CITY',
+        address: '3-й микрорайон, 25Г',
+        gisUrl: 'https://2gis.kz/aktobe/branches/70000001089890',
+        phone: '+77000000000',
+        whatsapp: '77000000000'
+      }
+    ];
+
+    let selectedZone = 'Standard';
+
+    /* ========================================================================
+       ИНИЦИАЛИЗАЦИЯ ИНТЕРФЕЙСА ПРИ ЗАГРУЗКЕ
+       ======================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderBranches();
+      populateBookingSelect();
+      render2GisList();
+      initTabs();
+      initZonePills();
+    });
+
+    /* Отрисовка 6 карточек филиалов во вкладке «Филиалы (6)» */
+    function renderBranches() {
+      const container = document.getElementById('panel-branches');
+      container.innerHTML = BRANCHES.map(branch => `
+        <article class="branch-card">
+          <div class="branch-header">
+            <div class="branch-name-wrap">
+              <span class="branch-tag">${branch.name}</span>
+              <span class="branch-address">${branch.address}</span>
+            </div>
+            <span class="branch-hours">24/7</span>
+          </div>
+          <div class="branch-actions">
+            <a href="${branch.gisUrl}" target="_blank" rel="noopener noreferrer" class="mini-btn mini-btn-map">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="3 11 22 2 13 21 11 13 3 11" />
+              </svg>
+              <span>Маршрут в 2ГИС</span>
+            </a>
+            <button type="button" class="mini-btn mini-btn-book" onclick="openBookingModal('${branch.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+              </svg>
+              <span>Бронь в этот клуб</span>
+            </button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    /* Заполнение выпадающего списка филиалов в модалке брони */
+    function populateBookingSelect() {
+      const select = document.getElementById('branchSelect');
+      select.innerHTML = BRANCHES.map(branch =>
+        `<option value="${branch.id}">PACMAN ${branch.name} — ${branch.address}</option>`
+      ).join('');
+    }
+
+    /* Заполнение списка филиалов в модалке отзывов 2ГИС */
+    function render2GisList() {
+      const list = document.getElementById('twoGisBranchesList');
+      list.innerHTML = BRANCHES.map(branch => `
+        <a href="${branch.gisUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 11px 14px;">
+          <span class="btn-left">
+            <span class="branch-tag">${branch.name}</span>
+            <span class="btn-main-label" style="font-size: 13.5px;">${branch.address}</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B800" stroke-width="2.4">
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
+        </a>
+      `).join('');
+    }
+
+    /* Переключение вкладок */
+    function initTabs() {
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabPanels = document.querySelectorAll('.tab-panel');
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab');
+
+          tabButtons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          tabPanels.forEach(p => p.classList.remove('active'));
+
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          document.getElementById(`panel-${target}`).classList.add('active');
+        });
+      });
+    }
+
+    /* Выбор игровой зоны в форме бронирования */
+    function initZonePills() {
+      const pills = document.querySelectorAll('.zone-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          selectedZone = pill.getAttribute('data-zone');
+        });
+      });
+    }
+
+    /* ========================================================================
+       УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ И ОТПРАВКА БРОНИ
+       ======================================================================== */
+    function openBookingModal(branchId) {
+      if (branchId) {
+        document.getElementById('branchSelect').value = branchId;
+      }
+      document.getElementById('bookingModal').classList.add('open');
+    }
+
+    function open2GisModal() {
+      document.getElementById('twoGisModal').classList.add('open');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('open');
+    }
+
+    function handleBackdropClick(event, modalId) {
+      if (event.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    /* Формирование заявки и переход в WhatsApp */
+    function sendWhatsAppBooking() {
+      const branchId = document.getElementById('branchSelect').value;
+      const branch = BRANCHES.find(b => b.id === branchId) || BRANCHES[0];
+      const pcCount = document.getElementById('pcCount').value;
+      const visitTime = document.getElementById('visitTime').value.trim() || 'В ближайшее время';
+      const guestName = document.getElementById('guestName').value.trim() || 'Гость';
+
+      const message =
+        `Здравствуйте! Хочу забронировать ПК в PACMAN Game Center (Актобе).\n` +
+        `• Филиал: ${branch.name} (${branch.address})\n` +
+        `• Зона: ${selectedZone}\n` +
+        `• Количество: ${pcCount}\n` +
+        `• Время: ${visitTime}\n` +
+        `• Имя: ${guestName}`;
+
+      const waUrl = `https://wa.me/${branch.whatsapp}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      closeModal('bookingModal');
+      showToast('Открываем WhatsApp для подтверждения брони...');
+    }
+
+    /* Копирование ссылки визитки (с безопасным фолбэком для iFrame/мобильных) */
+    function shareBusinessCard() {
+      const url = window.location.href;
+      const tempInput = document.createElement('input');
+      tempInput.value = url;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999);
+
+      try {
+        document.execCommand('copy');
+        showToast('Ссылка на визитку PACMAN скопирована!');
+      } catch (err) {
+        showToast('Скопируйте ссылку из адресной строки');
+      } finally {
+        document.body.removeChild(tempInput);
+      }
+    }
+
+    /* Показ аккуратного уведомления внизу экрана */
+    let toastTimer;
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+  </script>
+</body>
+</html>
